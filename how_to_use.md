@@ -28,7 +28,6 @@ Use the **Dataset Cleaner** page to:
 
 - standardize column names
 - convert datatypes
-- clean inconsistent data
 - save cleaned datasets
 
 ---

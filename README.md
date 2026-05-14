@@ -43,7 +43,6 @@ This platform allows users to upload datasets, create relationships between mult
 
 - Fix column names
 - Convert datatypes
-- Clean inconsistent data
 - Save cleaned datasets back to database
 
 ---
@@ -103,30 +102,15 @@ Supported charts:
 
 ---
 
-# 🛠️ Tech Stack
+## 🧰 Tech Stack
 
-## Frontend
-
-- Streamlit
-
-## Backend
-
-- Python
-- SQLAlchemy
-- PostgreSQL (Supabase)
-
-## Data Processing
-
-- Pandas
-- NumPy
-
-## Visualization
-
-- Plotly
-
-## Database
-
-- Supabase PostgreSQL
+| Category            | Tools                                     |
+| ------------------- | ----------------------------------------- |
+| **Frontend**        | Streamlit                                 |
+| **Backend**         | Python, SQLAlchemy, PostgreSQL (Supabase) |
+| **Data Processing** | Pandas, NumPy                             |
+| **Visualization**   | Plotly                                    |
+| **Database**        | Supabase PostgreSQL                       |
 
 ---
 
@@ -223,15 +207,15 @@ This project was built to:
 
 ---
 
-# 📸 Screenshots
+## 🧠 Author
 
-(Add screenshots here later)
+**Rudrapratap Sarma**  
+🎯 _Data Analyst | Data Scientist | AI & ML Enthusiast_  
+🎓 Manipal University Jaipur (Online BCA)
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue?logo=linkedin)](https://www.linkedin.com/)
+[![GitHub](https://img.shields.io/badge/GitHub-rudrapratap601-black?logo=github)](https://github.com/rudrapratap601)
 
 ---
 
-# 👨‍💻 Author
-
-Rudrapratap
-
-GitHub:
-https://github.com/rudrapratap601
+⭐ _If you find this project useful, consider starring the repository!_
