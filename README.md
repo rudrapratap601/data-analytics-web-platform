@@ -185,16 +185,6 @@ README.md
 
 ---
 
-# 🌐 Deployment
-
-This project can be deployed using:
-
-- Streamlit Cloud
-- Render
-- Railway
-
----
-
 # 🎯 Project Goals
 
 This project was built to:
