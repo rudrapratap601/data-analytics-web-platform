@@ -1,10 +1,18 @@
 import streamlit as st
 import pandas as pd
 
-from backend.schema import get_tables, get_columns
-from backend.query_builder import build_query
-from backend.db import get_engine
-from backend.data_loader import load_data
+from backend.schema import (
+    get_tables,
+    get_columns
+)
+
+from backend.query_builder import (
+    build_query
+)
+
+from backend.data_loader import (
+    load_data
+)
 
 
 # =========================================
@@ -33,7 +41,9 @@ def get_numeric_columns(columns):
             for num_type in numeric_types
         ):
 
-            numeric_columns.append(col_name)
+            numeric_columns.append(
+                col_name
+            )
 
     return numeric_columns
 
@@ -43,7 +53,9 @@ def get_numeric_columns(columns):
 # =========================================
 def show():
 
-    st.title("📊 Dynamic Analysis Builder")
+    st.title(
+        "📊 Dynamic Analysis Builder"
+    )
 
     st.markdown("""
     Build dynamic analytics queries using your uploaded datasets.
@@ -60,8 +72,15 @@ def show():
     # =========================================
     # Load Tables
     # =========================================
-    tables = get_tables()
+    with st.spinner(
+        "Loading datasets..."
+    ):
 
+        tables = get_tables()
+
+    # =========================================
+    # Validation
+    # =========================================
     if not tables:
 
         st.warning(
@@ -73,7 +92,9 @@ def show():
     # =========================================
     # Analysis Type
     # =========================================
-    st.subheader("Step 1: Select Analysis Type")
+    st.subheader(
+        "Step 1: Select Analysis Type"
+    )
 
     analysis_type = st.radio(
         "Choose Analysis Mode",
@@ -90,7 +111,9 @@ def show():
     # =========================================
     if analysis_type == "Single Table Analysis":
 
-        st.subheader("Step 2: Select Dataset")
+        st.subheader(
+            "Step 2: Select Dataset"
+        )
 
         table_options = [
             "🔽 Select a table"
@@ -102,9 +125,9 @@ def show():
             key="single_table"
         )
 
-        # =========================================
+        # =====================================
         # Validation
-        # =========================================
+        # =====================================
         if table1 == "🔽 Select a table":
 
             st.info(
@@ -115,34 +138,45 @@ def show():
 
         st.markdown("---")
 
-        # =========================================
+        # =====================================
         # Load Columns
-        # =========================================
-        with st.spinner("Loading Configure Analysis..."):
-            columns = get_columns(table1)
+        # =====================================
+        with st.spinner(
+            "Loading columns..."
+        ):
 
-            column_names = [
-                col[0]
-                for col in columns
-            ]
+            columns = get_columns(
+                table1
+            )
 
-            numeric_columns = get_numeric_columns(columns)
+        column_names = [
 
-            # =========================================
-            # Validation
-            # =========================================
-            if not numeric_columns:
+            col[0]
 
-                st.error(
-                    "No numeric columns found in this dataset."
-                )
+            for col in columns
+        ]
 
-                return
+        numeric_columns = get_numeric_columns(
+            columns
+        )
 
-        # =========================================
+        # =====================================
+        # Validation
+        # =====================================
+        if not numeric_columns:
+
+            st.error(
+                "No numeric columns found in this dataset."
+            )
+
+            return
+
+        # =====================================
         # Configure Analysis
-        # =========================================
-        st.subheader("Step 3: Configure Analysis")
+        # =====================================
+        st.subheader(
+            "Step 3: Configure Analysis"
+        )
 
         metric_column = st.selectbox(
             "Select Metric Column",
@@ -160,9 +194,9 @@ def show():
             ]
         )
 
-        # =========================================
+        # =====================================
         # Group By
-        # =========================================
+        # =====================================
         use_groupby = st.checkbox(
             "Use Group By"
         )
@@ -178,12 +212,16 @@ def show():
 
         st.markdown("---")
 
-        # =========================================
+        # =====================================
         # Generate Analysis
-        # =========================================
-        if st.button("Generate Analysis"):
+        # =====================================
+        if st.button(
+            "Generate Analysis"
+        ):
 
-            with st.spinner("Running single table analysis..."):
+            with st.spinner(
+                "Running single table analysis..."
+            ):
 
                 try:
 
@@ -194,12 +232,13 @@ def show():
                         group_by_column=group_by_column
                     )
 
-                    df = load_data(query)
-                    
+                    df = load_data(
+                        query
+                    )
 
-                    # =====================================
+                    # =============================
                     # Save Results
-                    # =====================================
+                    # =============================
                     st.session_state[
                         "analysis_generated"
                     ] = True
@@ -216,15 +255,19 @@ def show():
                         "analysis_type"
                     ] = "single"
 
+                    st.success(
+                        "Analysis generated successfully!"
+                    )
+
                 except Exception as e:
 
                     st.error(
                         f"Analysis Failed: {e}"
                     )
 
-        # =========================================
+        # =====================================
         # Show Results
-        # =========================================
+        # =====================================
         if (
             st.session_state.get(
                 "analysis_generated"
@@ -235,12 +278,20 @@ def show():
             ) == "single"
         ):
 
-            st.subheader("📌 Analysis Result")
+            st.markdown("---")
 
-            st.dataframe(
-                st.session_state["df"],
-                use_container_width=True
+            st.subheader(
+                "📌 Analysis Result"
             )
+
+            with st.spinner(
+                "Loading analysis results..."
+            ):
+
+                st.dataframe(
+                    st.session_state["df"],
+                    use_container_width=True
+                )
 
             st.success(
                 f"""
@@ -249,9 +300,9 @@ def show():
                 """
             )
 
-            # =====================================
+            # =================================
             # SQL Toggle
-            # =====================================
+            # =================================
             show_query = st.checkbox(
                 "Show Generated SQL Query",
                 key="single_query_toggle"
@@ -269,7 +320,9 @@ def show():
     # =========================================
     else:
 
-        st.subheader("Step 2: Select Datasets")
+        st.subheader(
+            "Step 2: Select Datasets"
+        )
 
         table_options = [
             "🔽 Select a table"
@@ -293,9 +346,9 @@ def show():
                 key="table2_multi"
             )
 
-        # =========================================
+        # =====================================
         # Validation
-        # =========================================
+        # =====================================
         if (
             table1 == "🔽 Select a table"
             or
@@ -308,9 +361,9 @@ def show():
 
             return
 
-        # =========================================
+        # =====================================
         # Prevent Same Table
-        # =========================================
+        # =====================================
         if table1 == table2:
 
             st.warning(
@@ -321,37 +374,51 @@ def show():
 
         st.markdown("---")
 
-        # =========================================
+        # =====================================
         # Load Columns
-        # =========================================
-        columns1 = get_columns(table1)
+        # =====================================
+        with st.spinner(
+            "Loading table columns..."
+        ):
 
-        columns2 = get_columns(table2)
+            columns1 = get_columns(
+                table1
+            )
 
-        # =========================================
+            columns2 = get_columns(
+                table2
+            )
+
+        # =====================================
         # All Columns
-        # =========================================
+        # =====================================
         all_columns = (
+
             [
                 f"{table1}.{col[0]}"
                 for col in columns1
             ]
+
             +
+
             [
                 f"{table2}.{col[0]}"
                 for col in columns2
             ]
         )
 
-        # =========================================
+        # =====================================
         # Numeric Columns
-        # =========================================
+        # =====================================
         numeric_columns = (
+
             [
                 f"{table1}.{col[0]}"
                 for col in columns1
+
                 if any(
                     num in str(col[1]).upper()
+
                     for num in [
                         "INT",
                         "BIGINT",
@@ -363,12 +430,16 @@ def show():
                     ]
                 )
             ]
+
             +
+
             [
                 f"{table2}.{col[0]}"
                 for col in columns2
+
                 if any(
                     num in str(col[1]).upper()
+
                     for num in [
                         "INT",
                         "BIGINT",
@@ -382,9 +453,9 @@ def show():
             ]
         )
 
-        # =========================================
+        # =====================================
         # Validation
-        # =========================================
+        # =====================================
         if not numeric_columns:
 
             st.error(
@@ -393,10 +464,12 @@ def show():
 
             return
 
-        # =========================================
+        # =====================================
         # Configure Analysis
-        # =========================================
-        st.subheader("Step 3: Configure Analysis")
+        # =====================================
+        st.subheader(
+            "Step 3: Configure Analysis"
+        )
 
         metric_column = st.selectbox(
             "Select Metric Column",
@@ -415,9 +488,9 @@ def show():
             key="agg_multi"
         )
 
-        # =========================================
+        # =====================================
         # Group By
-        # =========================================
+        # =====================================
         use_groupby = st.checkbox(
             "Use Group By",
             key="groupby_multi"
@@ -435,12 +508,16 @@ def show():
 
         st.markdown("---")
 
-        # =========================================
+        # =====================================
         # Generate Analysis
-        # =========================================
-        if st.button("Generate Analysis"):
+        # =====================================
+        if st.button(
+            "Generate Analysis"
+        ):
 
-            with st.spinner("Running multi-table analysis..."):
+            with st.spinner(
+                "Running multi-table analysis..."
+            ):
 
                 try:
 
@@ -452,13 +529,13 @@ def show():
                         group_by_column=group_by_column
                     )
 
-                    
+                    df = load_data(
+                        query
+                    )
 
-                    df = load_data(query)
-
-                    # =====================================
+                    # =============================
                     # Save Results
-                    # =====================================
+                    # =============================
                     st.session_state[
                         "analysis_generated"
                     ] = True
@@ -475,15 +552,19 @@ def show():
                         "analysis_type"
                     ] = "multi"
 
+                    st.success(
+                        "Analysis generated successfully!"
+                    )
+
                 except Exception as e:
 
                     st.error(
                         f"Analysis Failed: {e}"
                     )
 
-        # =========================================
+        # =====================================
         # Show Results
-        # =========================================
+        # =====================================
         if (
             st.session_state.get(
                 "analysis_generated"
@@ -494,12 +575,20 @@ def show():
             ) == "multi"
         ):
 
-            st.subheader("📌 Analysis Result")
+            st.markdown("---")
 
-            st.dataframe(
-                st.session_state["df"],
-                use_container_width=True
+            st.subheader(
+                "📌 Analysis Result"
             )
+
+            with st.spinner(
+                "Loading analysis results..."
+            ):
+
+                st.dataframe(
+                    st.session_state["df"],
+                    use_container_width=True
+                )
 
             st.success(
                 f"""
@@ -508,9 +597,9 @@ def show():
                 """
             )
 
-            # =====================================
+            # =================================
             # SQL Toggle
-            # =====================================
+            # =================================
             show_query = st.checkbox(
                 "Show Generated SQL Query",
                 key="multi_query_toggle"
