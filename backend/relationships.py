@@ -1,5 +1,4 @@
-from turtle import st
-
+import streamlit as st
 import pandas as pd
 
 from sqlalchemy import text
