@@ -862,27 +862,25 @@ def show():
 
             st.markdown(
                 f"""
-                <div style="
-                    background-color:#17324d;
-                    padding:18px;
-                    border-radius:12px;
-                    margin-bottom:14px;
-                    border-left:5px solid #4da6ff;
-
-                    white-space:normal;
-                    overflow-wrap:anywhere;
-                    word-break:break-word;
-
-                    color:white;
-                    font-size:16px;
-                    line-height:1.7;
-                ">
-                    {insight}
-                </div>
-                """,
+        <div style="
+        background-color:#17324d;
+        padding:18px;
+        border-radius:12px;
+        margin-bottom:14px;
+        border-left:5px solid #4da6ff;
+        white-space:normal;
+        overflow-wrap:anywhere;
+        word-break:break-word;
+        color:white;
+        font-size:16px;
+        line-height:1.7;
+        ">
+        🧠 {insight}
+        </div>
+        """,
                 unsafe_allow_html=True
             )
-            
+
     except Exception as e:
 
         st.warning(
