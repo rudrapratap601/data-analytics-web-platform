@@ -9,7 +9,11 @@ from sqlalchemy.types import (
 )
 
 from backend.db import get_engine
-from backend.schema import get_tables
+from backend.schema import (
+    get_tables,
+    get_columns
+)
+
 from backend.data_loader import load_data
 
 
@@ -114,7 +118,11 @@ def show():
     # =========================================
     # Load Tables
     # =========================================
-    tables = get_tables()
+    with st.spinner(
+        "Loading datasets..."
+    ):
+
+        tables = get_tables()
 
     if not tables:
 
@@ -127,7 +135,9 @@ def show():
     # =========================================
     # Select Dataset
     # =========================================
-    st.subheader("Step 1: Select Dataset")
+    st.subheader(
+        "Step 1: Select Dataset"
+    )
 
     options = [
         "🔽 Select a table"
@@ -180,9 +190,6 @@ def show():
 
         try:
 
-            # =====================================
-            # FULL DATASET
-            # =====================================
             df = load_data(query)
 
         except Exception as e:
@@ -306,17 +313,20 @@ def show():
 
     # =========================================
     # Apply Datatype Changes
-    # FULL DATASET CLEANING
     # =========================================
-    for col, dtype in datatype_choices.items():
+    with st.spinner(
+        "Applying datatype conversions..."
+    ):
 
-        if dtype != "Keep Current":
+        for col, dtype in datatype_choices.items():
 
-            df = convert_column_type(
-                df,
-                col,
-                dtype
-            )
+            if dtype != "Keep Current":
+
+                df = convert_column_type(
+                    df,
+                    col,
+                    dtype
+                )
 
     st.markdown("---")
 
@@ -465,6 +475,18 @@ def show():
                     dtype=sql_dtypes
                 )
 
+                # =================================
+                # Clear Cache
+                # =================================
+                get_tables.clear()
+                get_columns.clear()
+
+                st.cache_data.clear()
+                st.cache_resource.clear()
+
+            # =====================================
+            # Success Messages
+            # =====================================
             st.success(
                 f"""
                 Dataset saved successfully
@@ -487,6 +509,11 @@ def show():
                 st.info(
                     "New cleaned dataset created successfully."
                 )
+
+            # =====================================
+            # Rerun App
+            # =====================================
+            st.rerun()
 
         except Exception as e:
 
