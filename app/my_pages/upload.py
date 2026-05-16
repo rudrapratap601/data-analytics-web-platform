@@ -79,7 +79,7 @@ def show():
     # Dataset Name
     # =====================================
     table_name = st.text_input(
-        "Dataset Name"
+        "Enter Dataset Name"
     )
 
     st.markdown("---")
@@ -184,7 +184,7 @@ def show():
 
             st.dataframe(
                 df.head(),
-                width="stretch",
+                use_container_width=True,
             )
 
             st.write(
