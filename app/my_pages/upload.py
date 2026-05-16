@@ -64,7 +64,7 @@ def show():
     # =====================================
     uploaded_file = st.file_uploader(
 
-        "Upload CSVor Excel File",
+        "Upload CSV or Excel File",
 
         type=["csv", "xlsx"]
     )
