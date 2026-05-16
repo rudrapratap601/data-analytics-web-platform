@@ -105,13 +105,16 @@ def show():
             if uploaded_file.name.endswith(".csv"):
 
                 df = pd.read_csv(
-                    uploaded_file
+                    uploaded_file,
+                    low_memory=False,
+                    encoding="utf-8"
                 )
 
             elif uploaded_file.name.endswith(".xlsx"):
 
                 df = pd.read_excel(
-                    uploaded_file
+                    uploaded_file,
+                    engine="openpyxl"
                 )
 
             else:
