@@ -24,11 +24,7 @@ def generate_insights(
         # Basic Information
         # =================================
         insights.append(
-            f"""
-            Dataset contains
-            {df.shape[0]} rows and
-            {df.shape[1]} columns.
-            """
+            f"Dataset contains {df.shape[0]} rows and {df.shape[1]} columns."
         )
 
         # =================================
@@ -44,24 +40,15 @@ def generate_insights(
         min_value = df[y_col].min()
 
         insights.append(
-            f"""
-            Average {y_col}:
-            {avg_value}
-            """
+            f"Average {y_col}: {avg_value}"
         )
 
         insights.append(
-            f"""
-            Maximum {y_col}:
-            {max_value}
-            """
+            f"Maximum {y_col}: {max_value}"
         )
 
         insights.append(
-            f"""
-            Minimum {y_col}:
-            {min_value}
-            """
+            f"Minimum {y_col}: {min_value}"
         )
 
         # =================================
@@ -74,13 +61,7 @@ def generate_insights(
             ]
 
             insights.append(
-                f"""
-                Highest performing
-                {x_col}:
-                {top_row[x_col]}
-                with value
-                {top_row[y_col]}.
-                """
+                f"Highest performing {x_col}: {top_row[x_col]} with value {top_row[y_col]}."
             )
 
         except Exception:
@@ -95,11 +76,7 @@ def generate_insights(
         )
 
         insights.append(
-            f"""
-            Dataset contains
-            {missing_values}
-            missing values.
-            """
+            f"Dataset contains {missing_values} missing values."
         )
 
         # =================================
@@ -110,11 +87,7 @@ def generate_insights(
         )
 
         insights.append(
-            f"""
-            Dataset contains
-            {duplicate_rows}
-            duplicate rows.
-            """
+            f"Dataset contains {duplicate_rows} duplicate rows."
         )
 
     except Exception as e:

@@ -860,24 +860,7 @@ def show():
 
         for insight in insights:
 
-            st.markdown(
-                f"""
-                <div style="
-                    background-color:#17324d;
-                    padding:15px;
-                    border-radius:10px;
-                    margin-bottom:10px;
-                    word-wrap:break-word;
-                    overflow-wrap:break-word;
-                ">
-                {insight}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-            
-
-            
+            st.info(insight)
 
     except Exception as e:
 
