@@ -146,43 +146,43 @@ def save_relationship(relationship):
 # =========================================
 def delete_relationship(index):
 
-        create_relationships_table()
+    create_relationships_table()
 
-        relationships = load_relationships()
+    relationships = load_relationships()
 
-        if (
-            index < 0
-            or
-            index >= len(relationships)
-        ):
+    if (
+        index < 0
+        or
+        index >= len(relationships)
+    ):
 
-            return
+        return
 
-        relationship = relationships[index]
+    relationship = relationships[index]
 
-        engine = get_engine()
+    engine = get_engine()
 
-        query = """
-        DELETE FROM relationships
+    query = """
+    DELETE FROM relationships
 
-        WHERE
+    WHERE
 
-            table1 = :table1
+        table1 = :table1
 
-            AND column1 = :column1
+        AND column1 = :column1
 
-            AND table2 = :table2
+        AND table2 = :table2
 
-            AND column2 = :column2
-        """
+        AND column2 = :column2
+    """
 
-        with engine.connect() as conn:
+    with engine.connect() as conn:
 
-            conn.execute(
+        conn.execute(
 
-                text(query),
+            text(query),
 
-                relationship
-            )
+            relationship
+        )
 
-            conn.commit()
+        conn.commit()    
