@@ -14,10 +14,6 @@ from backend.insight_engine import (
     generate_insights
 )
 
-from backend.quality_report import (
-    generate_quality_report
-)
-
 
 # =========================================
 # Find Matching Relationship
@@ -150,7 +146,11 @@ def show():
     # =====================================
     # Load Tables
     # =====================================
-    tables = get_tables()
+    with st.spinner(
+        "Loading datasets..."
+    ):
+
+        tables = get_tables()
 
     if not tables:
 
@@ -223,10 +223,14 @@ def show():
 
         try:
 
-            preview_df = pd.read_sql(
-                preview_query,
-                con=engine
-            )
+            with st.spinner(
+                "Loading dataset preview..."
+            ):
+
+                preview_df = pd.read_sql(
+                    preview_query,
+                    con=engine
+                )
 
         except Exception as e:
 
@@ -298,10 +302,14 @@ def show():
         # =================================
         # Relationship
         # =================================
-        relationship = get_matching_relationship(
-            table1,
-            table2
-        )
+        with st.spinner(
+            "Loading relationships..."
+        ):
+
+            relationship = get_matching_relationship(
+                table1,
+                table2
+            )
 
         if not relationship:
 
@@ -337,23 +345,27 @@ def show():
         # =================================
         # Get Columns
         # =================================
-        columns1_df = pd.read_sql(
-            f'''
-            SELECT *
-            FROM "{table1}"
-            LIMIT 1
-            ''',
-            con=engine
-        )
+        with st.spinner(
+            "Loading table columns..."
+        ):
 
-        columns2_df = pd.read_sql(
-            f'''
-            SELECT *
-            FROM "{table2}"
-            LIMIT 1
-            ''',
-            con=engine
-        )
+            columns1_df = pd.read_sql(
+                f'''
+                SELECT *
+                FROM "{table1}"
+                LIMIT 1
+                ''',
+                con=engine
+            )
+
+            columns2_df = pd.read_sql(
+                f'''
+                SELECT *
+                FROM "{table2}"
+                LIMIT 1
+                ''',
+                con=engine
+            )
 
         # =================================
         # Aliased Columns
@@ -398,10 +410,14 @@ def show():
 
         try:
 
-            preview_df = pd.read_sql(
-                preview_query,
-                con=engine
-            )
+            with st.spinner(
+                "Loading joined dataset preview..."
+            ):
+
+                preview_df = pd.read_sql(
+                    preview_query,
+                    con=engine
+                )
 
         except Exception as e:
 
@@ -448,10 +464,14 @@ def show():
         """
     )
 
-    st.dataframe(
-        preview_df.head(100),
-        use_container_width=True
-    )
+    with st.spinner(
+        "Loading dataset preview table..."
+    ):
+
+        st.dataframe(
+            preview_df.head(100),
+            use_container_width=True
+        )
 
     st.markdown("---")
 
@@ -677,10 +697,14 @@ def show():
 
     try:
 
-        summary_df = pd.read_sql(
-            aggregation_query,
-            con=engine
-        )
+        with st.spinner(
+            "Running dashboard analysis on full dataset..."
+        ):
+
+            summary_df = pd.read_sql(
+                aggregation_query,
+                con=engine
+            )
 
     except Exception as e:
 
@@ -769,10 +793,14 @@ def show():
         "📌 Analysis Dataset"
     )
 
-    st.dataframe(
-        summary_df,
-        use_container_width=True
-    )
+    with st.spinner(
+        "Loading analysis dataset..."
+    ):
+
+        st.dataframe(
+            summary_df,
+            use_container_width=True
+        )
 
     st.markdown("---")
 
@@ -781,16 +809,20 @@ def show():
     # =====================================
     try:
 
-        fig = create_chart(
+        with st.spinner(
+            "Generating dashboard visualization..."
+        ):
 
-            summary_df,
+            fig = create_chart(
 
-            chart_type,
+                summary_df,
 
-            x_col,
+                chart_type,
 
-            y_col
-        )
+                x_col,
+
+                y_col
+            )
 
         st.subheader(
             "📈 Dashboard Visualization"
@@ -816,11 +848,15 @@ def show():
 
     try:
 
-        insights = generate_insights(
-            summary_df,
-            x_col,
-            y_col
-        )
+        with st.spinner(
+            "Generating AI insights..."
+        ):
+
+            insights = generate_insights(
+                summary_df,
+                x_col,
+                y_col
+            )
 
         for insight in insights:
 
@@ -843,104 +879,108 @@ def show():
 
     try:
 
-        # =================================
-        # Total Rows Query
-        # =================================
-        total_rows_query = f'''
-        SELECT COUNT(*) AS total_rows
+        with st.spinner(
+            "Generating full dataset quality report..."
+        ):
 
-        {from_sql}
-        '''
-
-        total_rows = pd.read_sql(
-            total_rows_query,
-            con=engine
-        ).iloc[0]["total_rows"]
-
-        st.write(
-            f"**Total Rows:** {total_rows:,}"
-        )
-
-        st.write(
-            f"**Total Columns:** {len(preview_df.columns)}"
-        )
-
-        st.markdown("---")
-
-        # =================================
-        # Missing Value Report
-        # =================================
-        missing_report = []
-
-        for col in preview_df.columns:
-
-            sql_col = convert_to_sql_column(
-                col,
-                dashboard_mode,
-                table if dashboard_mode ==
-                "Single Dataset Dashboard"
-                else None
-            )
-
-            missing_query = f'''
-            SELECT COUNT(*) AS missing_count
-
-            {from_sql}
-
-            WHERE {sql_col} IS NULL
-            '''
-
-            missing_count = pd.read_sql(
-                missing_query,
-                con=engine
-            ).iloc[0]["missing_count"]
-
-            missing_percent = round(
-                (
-                    missing_count
-                    / total_rows
-                ) * 100,
-                2
-            )
-
-            unique_query = f'''
-            SELECT COUNT(
-                DISTINCT {sql_col}
-            ) AS unique_count
+            # =============================
+            # Total Rows Query
+            # =============================
+            total_rows_query = f'''
+            SELECT COUNT(*) AS total_rows
 
             {from_sql}
             '''
 
-            unique_count = pd.read_sql(
-                unique_query,
+            total_rows = pd.read_sql(
+                total_rows_query,
                 con=engine
-            ).iloc[0]["unique_count"]
+            ).iloc[0]["total_rows"]
 
-            missing_report.append({
+            st.write(
+                f"**Total Rows:** {total_rows:,}"
+            )
 
-                "Column": col,
+            st.write(
+                f"**Total Columns:** {len(preview_df.columns)}"
+            )
 
-                "Missing Values": missing_count,
+            st.markdown("---")
 
-                "Missing %": missing_percent,
+            # =============================
+            # Missing Value Report
+            # =============================
+            missing_report = []
 
-                "Unique Values": unique_count
-            })
+            for col in preview_df.columns:
 
-        # =================================
-        # Convert to DataFrame
-        # =================================
-        quality_df = pd.DataFrame(
-            missing_report
-        )
+                sql_col = convert_to_sql_column(
+                    col,
+                    dashboard_mode,
+                    table if dashboard_mode ==
+                    "Single Dataset Dashboard"
+                    else None
+                )
 
-        # =================================
-        # Sort by Missing Values
-        # =================================
-        quality_df = quality_df.sort_values(
-            by="Missing Values",
-            ascending=False
-        )
+                missing_query = f'''
+                SELECT COUNT(*) AS missing_count
+
+                {from_sql}
+
+                WHERE {sql_col} IS NULL
+                '''
+
+                missing_count = pd.read_sql(
+                    missing_query,
+                    con=engine
+                ).iloc[0]["missing_count"]
+
+                missing_percent = round(
+                    (
+                        missing_count
+                        / total_rows
+                    ) * 100,
+                    2
+                )
+
+                unique_query = f'''
+                SELECT COUNT(
+                    DISTINCT {sql_col}
+                ) AS unique_count
+
+                {from_sql}
+                '''
+
+                unique_count = pd.read_sql(
+                    unique_query,
+                    con=engine
+                ).iloc[0]["unique_count"]
+
+                missing_report.append({
+
+                    "Column": col,
+
+                    "Missing Values": missing_count,
+
+                    "Missing %": missing_percent,
+
+                    "Unique Values": unique_count
+                })
+
+            # =============================
+            # Convert to DataFrame
+            # =============================
+            quality_df = pd.DataFrame(
+                missing_report
+            )
+
+            # =============================
+            # Sort by Missing Values
+            # =============================
+            quality_df = quality_df.sort_values(
+                by="Missing Values",
+                ascending=False
+            )
 
         # =================================
         # Display Report
@@ -963,9 +1003,13 @@ def show():
     # =====================================
     st.subheader("📥 Export Results")
 
-    csv = summary_df.to_csv(
-        index=False
-    ).encode("utf-8")
+    with st.spinner(
+        "Preparing CSV export..."
+    ):
+
+        csv = summary_df.to_csv(
+            index=False
+        ).encode("utf-8")
 
     st.download_button(
 
