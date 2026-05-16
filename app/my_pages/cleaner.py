@@ -1,6 +1,13 @@
 import streamlit as st
 import pandas as pd
 
+from sqlalchemy.types import (
+    Integer,
+    Float,
+    Text,
+    DateTime
+)
+
 from backend.db import get_engine
 from backend.schema import get_tables
 from backend.data_loader import load_data
@@ -55,7 +62,7 @@ def convert_column_type(
             df[column] = pd.to_numeric(
                 df[column],
                 errors="coerce"
-            )
+            ).astype("float64")
 
         # =====================================
         # TEXT
@@ -144,16 +151,28 @@ def show():
 
     st.markdown("---")
 
-    
+    # =========================================
+    # Preview Rows
+    # =========================================
+    preview_limit = st.selectbox(
+        "Rows to Preview",
+        [
+            100,
+            1000,
+            5000
+        ],
+        index=1
+    )
+
+    st.markdown("---")
 
     # =========================================
-    # Load Dataset
-    # PostgreSQL Compatible
+    # Load FULL Dataset
     # =========================================
-
     with st.spinner(
-        "Loading dataset..."
+        "Loading full dataset..."
     ):
+
         query = f'''
         SELECT *
         FROM "{selected_table}"
@@ -161,7 +180,11 @@ def show():
 
         try:
 
+            # =====================================
+            # FULL DATASET
+            # =====================================
             df = load_data(query)
+
         except Exception as e:
 
             st.error(
@@ -170,16 +193,23 @@ def show():
 
             return
 
-        # =========================================
-        # Empty Dataset Check
-        # =========================================
-        if df.empty:
+    # =========================================
+    # Empty Dataset Check
+    # =========================================
+    if df.empty:
 
-            st.warning(
-                "Dataset is empty."
-            )
+        st.warning(
+            "Dataset is empty."
+        )
 
-            return
+        return
+
+    # =========================================
+    # Preview Data
+    # =========================================
+    preview_df = df.head(
+        preview_limit
+    )
 
     # =========================================
     # Original Preview
@@ -188,14 +218,23 @@ def show():
         "📌 Original Dataset Preview"
     )
 
+    st.caption(
+        f"""
+        Showing first
+        {len(preview_df):,} rows
+        out of
+        {len(df):,} total rows
+        """
+    )
+
     st.dataframe(
-        df.head(),
+        preview_df,
         use_container_width=True
     )
 
     st.write(
         f"""
-        Rows: {df.shape[0]}
+        Total Rows: {df.shape[0]:,}
         | Columns: {df.shape[1]}
         """
     )
@@ -267,6 +306,7 @@ def show():
 
     # =========================================
     # Apply Datatype Changes
+    # FULL DATASET CLEANING
     # =========================================
     for col, dtype in datatype_choices.items():
 
@@ -287,13 +327,17 @@ def show():
         "📊 Cleaned Dataset Preview"
     )
 
+    cleaned_preview = df.head(
+        preview_limit
+    )
+
     st.dataframe(
-        df.head(),
+        cleaned_preview,
         use_container_width=True
     )
 
     # =========================================
-    # Datatypes Table
+    # Updated Datatypes
     # =========================================
     st.markdown(
         "### Updated Datatypes"
@@ -370,16 +414,40 @@ def show():
 
         try:
 
-            # =================================
-            # Loading Spinner
-            # =================================
             with st.spinner(
                 "Saving cleaned dataset..."
             ):
 
-                # =============================
-                # Save to PostgreSQL
-                # =============================
+                # =================================
+                # SQL Datatype Mapping
+                # =================================
+                sql_dtypes = {}
+
+                for col in df.columns:
+
+                    dtype = str(
+                        df[col].dtype
+                    ).lower()
+
+                    if "int" in dtype:
+
+                        sql_dtypes[col] = Integer()
+
+                    elif "float" in dtype:
+
+                        sql_dtypes[col] = Float()
+
+                    elif "datetime" in dtype:
+
+                        sql_dtypes[col] = DateTime()
+
+                    else:
+
+                        sql_dtypes[col] = Text()
+
+                # =================================
+                # Save Dataset
+                # =================================
                 df.to_sql(
 
                     final_table_name,
@@ -392,12 +460,11 @@ def show():
 
                     method="multi",
 
-                    chunksize=5000
+                    chunksize=5000,
+
+                    dtype=sql_dtypes
                 )
 
-            # =================================
-            # Success Message
-            # =================================
             st.success(
                 f"""
                 Dataset saved successfully
@@ -405,9 +472,6 @@ def show():
                 """
             )
 
-            # =================================
-            # Save Mode Info
-            # =================================
             if (
                 save_mode
                 ==

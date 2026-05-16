@@ -53,7 +53,78 @@ def get_matching_relationship(
 
 
 # =========================================
-# MAIN DASHBOARD PAGE
+# Better Dimension Columns
+# =========================================
+def get_dimension_columns(df):
+
+    excluded_keywords = [
+
+        "id",
+
+        "_id",
+
+        "uuid",
+
+        "key",
+
+        "link",
+
+        "url"
+    ]
+
+    dimension_columns = []
+
+    for col in df.columns:
+
+        col_lower = col.lower()
+
+        # =====================================
+        # Skip ID / URL Columns
+        # =====================================
+        if any(
+            keyword in col_lower
+            for keyword in excluded_keywords
+        ):
+
+            continue
+
+        dimension_columns.append(col)
+
+    return dimension_columns
+
+
+# =========================================
+# Convert UI Column to SQL Column
+# =========================================
+def convert_to_sql_column(
+    col_name,
+    dashboard_mode,
+    table=None
+):
+
+    # =====================================
+    # Single Dataset
+    # =====================================
+    if dashboard_mode == "Single Dataset Dashboard":
+
+        return f'''"{table}"."{col_name}"'''
+
+    # =====================================
+    # Multi Dataset
+    # =====================================
+    split_index = col_name.find("_")
+
+    table_part = col_name[:split_index]
+
+    column_part = col_name[
+        split_index + 1:
+    ]
+
+    return f'''"{table_part}"."{column_part}"'''
+
+
+# =========================================
+# MAIN PAGE
 # =========================================
 def show():
 
@@ -63,16 +134,16 @@ def show():
     st.title("📈 Dashboard Builder")
 
     st.markdown("""
-    Create dynamic visualizations and dashboards
-    from your datasets.
+    Create dynamic visualizations
+    and dashboards from datasets.
     """)
 
-    st.info(
-        """
-        For multi-dataset dashboards,
-        relationships must be created first.
-        """
-    )
+    st.info("""
+    Dashboard calculations are performed
+    on the FULL dataset using PostgreSQL.
+
+    Only preview rows are partially loaded.
+    """)
 
     st.markdown("---")
 
@@ -120,9 +191,6 @@ def show():
             options
         )
 
-        # =================================
-        # Validation
-        # =================================
         if table == "🔽 Select Dataset":
 
             st.info(
@@ -132,28 +200,48 @@ def show():
             return
 
         # =================================
-        # PostgreSQL Query
+        # Preview Limit
         # =================================
-        with st.spinner("Loading dataset..."):
-            query = f'''
-            SELECT *
-            FROM "{table}"
-            '''
+        preview_limit = st.selectbox(
+            "Rows to Preview",
+            [
+                100,
+                1000,
+                5000
+            ],
+            index=1
+        )
 
-            try:
+        # =================================
+        # Preview Query
+        # =================================
+        preview_query = f'''
+        SELECT *
+        FROM "{table}"
+        LIMIT {preview_limit}
+        '''
 
-                df = pd.read_sql(
-                    query,
-                    con=engine
-                )
+        try:
 
-            except Exception as e:
+            preview_df = pd.read_sql(
+                preview_query,
+                con=engine
+            )
 
-                st.error(
-                    f"Failed to load dataset: {e}"
-                )
+        except Exception as e:
 
-                return
+            st.error(
+                f"Failed to load dataset: {e}"
+            )
+
+            return
+
+        # =================================
+        # Base SQL
+        # =================================
+        from_sql = f'''
+        FROM "{table}"
+        '''
 
     # =====================================
     # MULTI DATASET MODE
@@ -173,7 +261,7 @@ def show():
             table1 = st.selectbox(
                 "Select First Table",
                 options,
-                key="dashboard_table1"
+                key="table1"
             )
 
         with col2:
@@ -181,7 +269,7 @@ def show():
             table2 = st.selectbox(
                 "Select Second Table",
                 options,
-                key="dashboard_table2"
+                key="table2"
             )
 
         # =================================
@@ -208,7 +296,7 @@ def show():
             return
 
         # =================================
-        # Relationship Validation
+        # Relationship
         # =================================
         relationship = get_matching_relationship(
             table1,
@@ -218,52 +306,57 @@ def show():
         if not relationship:
 
             st.error(
-                """
-                No relationship found between
-                selected tables.
-                """
+                "No relationship found."
             )
 
             return
 
         # =================================
+        # Preview Limit
+        # =================================
+        preview_limit = st.selectbox(
+            "Rows to Preview",
+            [
+                100,
+                1000,
+                5000
+            ],
+            index=1,
+            key="multi_preview_limit"
+        )
+
+        # =================================
         # Relationship Info
         # =================================
         left_table = relationship["table1"]
-
         left_column = relationship["column1"]
 
         right_table = relationship["table2"]
-
         right_column = relationship["column2"]
 
         # =================================
-        # Load Columns for Safe Aliasing
+        # Get Columns
         # =================================
-        columns1_query = f'''
-        SELECT *
-        FROM "{table1}"
-        LIMIT 1
-        '''
-
-        columns2_query = f'''
-        SELECT *
-        FROM "{table2}"
-        LIMIT 1
-        '''
-
         columns1_df = pd.read_sql(
-            columns1_query,
+            f'''
+            SELECT *
+            FROM "{table1}"
+            LIMIT 1
+            ''',
             con=engine
         )
 
         columns2_df = pd.read_sql(
-            columns2_query,
+            f'''
+            SELECT *
+            FROM "{table2}"
+            LIMIT 1
+            ''',
             con=engine
         )
 
         # =================================
-        # Create Aliased Columns
+        # Aliased Columns
         # =================================
         table1_columns = [
 
@@ -279,57 +372,63 @@ def show():
             for col in columns2_df.columns
         ]
 
-        select_columns = (
-            table1_columns
-            +
-            table2_columns
-        )
-
         select_sql = ",\n".join(
-            select_columns
+            table1_columns + table2_columns
         )
 
         # =================================
-        # PostgreSQL JOIN Query
+        # Preview Query
         # =================================
-        with st.spinner(
-            "Loading joined dataset..."
-        ):
+        preview_query = f'''
+        SELECT
 
-            query = f'''
-            SELECT
+        {select_sql}
 
-            {select_sql}
+        FROM "{table1}"
 
-            FROM "{table1}"
+        JOIN "{table2}"
 
-            JOIN "{table2}"
+        ON
+        "{left_table}"."{left_column}"
+        =
+        "{right_table}"."{right_column}"
 
-            ON
-            "{left_table}"."{left_column}"
-            =
-            "{right_table}"."{right_column}"
-            '''
+        LIMIT {preview_limit}
+        '''
 
-            try:
+        try:
 
-                df = pd.read_sql(
-                    query,
-                    con=engine
-                )
+            preview_df = pd.read_sql(
+                preview_query,
+                con=engine
+            )
 
-            except Exception as e:
+        except Exception as e:
 
-                st.error(
-                    f"Failed to load joined dataset: {e}"
-                )
+            st.error(
+                f"Failed to load joined dataset: {e}"
+            )
 
-                return
+            return
+
+        # =================================
+        # Base SQL
+        # =================================
+        from_sql = f'''
+        FROM "{table1}"
+
+        JOIN "{table2}"
+
+        ON
+        "{left_table}"."{left_column}"
+        =
+        "{right_table}"."{right_column}"
+        '''
 
     # =====================================
-    # Empty Dataset Check
+    # Empty Check
     # =====================================
-    if df.empty:
+    if preview_df.empty:
 
         st.warning(
             "Dataset is empty."
@@ -338,20 +437,20 @@ def show():
         return
 
     # =====================================
-    # Dataset Preview
+    # Preview
     # =====================================
     st.subheader("📌 Dataset Preview")
 
-    st.dataframe(
-        df.head(),
-        use_container_width=True
+    st.caption(
+        f"""
+        Showing first
+        {len(preview_df):,} rows
+        """
     )
 
-    st.write(
-        f"""
-        Rows: {df.shape[0]}
-        | Columns: {df.shape[1]}
-        """
+    st.dataframe(
+        preview_df.head(100),
+        use_container_width=True
     )
 
     st.markdown("---")
@@ -359,7 +458,7 @@ def show():
     # =====================================
     # Detect Columns
     # =====================================
-    numeric_columns = df.select_dtypes(
+    numeric_columns = preview_df.select_dtypes(
         include=[
             "int64",
             "float64",
@@ -367,7 +466,9 @@ def show():
         ]
     ).columns.tolist()
 
-    all_columns = df.columns.tolist()
+    dimension_columns = get_dimension_columns(
+        preview_df
+    )
 
     # =====================================
     # Validation
@@ -380,6 +481,14 @@ def show():
 
         return
 
+    if not dimension_columns:
+
+        st.error(
+            "No suitable dimension columns found."
+        )
+
+        return
+
     # =====================================
     # Visualization Settings
     # =====================================
@@ -387,15 +496,57 @@ def show():
         "📊 Visualization Settings"
     )
 
+    dimension_options = [
+        "🔽 Select Dimension Column"
+    ] + dimension_columns
+
+    metric_options = [
+        "🔽 Select Metric Column"
+    ] + numeric_columns
+
     x_col = st.selectbox(
         "Select Dimension Column",
-        all_columns
+        dimension_options
     )
 
     y_col = st.selectbox(
         "Select Metric Column",
-        numeric_columns
+        metric_options
     )
+
+    # =====================================
+    # Prevent Auto Selection
+    # =====================================
+    if (
+        x_col == "🔽 Select Dimension Column"
+        or
+        y_col == "🔽 Select Metric Column"
+    ):
+
+        st.info(
+            "Please select both columns."
+        )
+
+        return
+
+    # =====================================
+    # High Cardinality Warning
+    # =====================================
+    unique_count = preview_df[
+        x_col
+    ].nunique()
+
+    if unique_count > 100:
+
+        st.warning(
+            f"""
+            '{x_col}' contains
+            {unique_count:,} unique values.
+
+            Large charts may become slow
+            or difficult to read.
+            """
+        )
 
     # =====================================
     # Aggregation
@@ -412,34 +563,123 @@ def show():
     )
 
     # =====================================
-    # Aggregation Mapping
+    # Time Series Detection
+    # =====================================
+    is_datetime = pd.api.types.is_datetime64_any_dtype(
+        preview_df[x_col]
+    )
+
+    time_granularity = None
+
+    if is_datetime:
+
+        time_granularity = st.selectbox(
+            "Time Granularity",
+            [
+                "Day",
+                "Month",
+                "Year"
+            ]
+        )
+
+    # =====================================
+    # SQL Aggregation Mapping
     # =====================================
     aggregation_map = {
 
-        "SUM": "sum",
+        "SUM": "SUM",
 
-        "AVG": "mean",
+        "AVG": "AVG",
 
-        "COUNT": "count",
+        "COUNT": "COUNT",
 
-        "MAX": "max",
+        "MAX": "MAX",
 
-        "MIN": "min"
+        "MIN": "MIN"
     }
 
+    sql_aggregation = aggregation_map[
+        aggregation
+    ]
+
     # =====================================
-    # Aggregate Data
+    # Convert Columns
     # =====================================
+    if dashboard_mode == "Single Dataset Dashboard":
+
+        x_col_sql = convert_to_sql_column(
+            x_col,
+            dashboard_mode,
+            table
+        )
+
+        y_col_sql = convert_to_sql_column(
+            y_col,
+            dashboard_mode,
+            table
+        )
+
+    else:
+
+        x_col_sql = convert_to_sql_column(
+            x_col,
+            dashboard_mode
+        )
+
+        y_col_sql = convert_to_sql_column(
+            y_col,
+            dashboard_mode
+        )
+
+    # =====================================
+    # Time Series SQL
+    # =====================================
+    group_dimension_sql = x_col_sql
+
+    if is_datetime:
+
+        granularity_map = {
+
+            "Day": "day",
+
+            "Month": "month",
+
+            "Year": "year"
+        }
+
+        postgres_granularity = granularity_map[
+            time_granularity
+        ]
+
+        group_dimension_sql = f'''
+        DATE_TRUNC(
+            '{postgres_granularity}',
+            {x_col_sql}
+        )
+        '''
+
+    # =====================================
+    # FULL DATASET AGGREGATION
+    # =====================================
+    aggregation_query = f'''
+    SELECT
+
+    {group_dimension_sql} AS dimension,
+
+    {sql_aggregation}({y_col_sql}) AS result
+
+    {from_sql}
+
+    GROUP BY {group_dimension_sql}
+
+    ORDER BY dimension DESC
+    '''
+
     try:
 
-        summary_df = (
-            df.groupby(x_col)[y_col]
-            .agg(
-                aggregation_map[
-                    aggregation
-                ]
-            )
-            .reset_index()
+        summary_df = pd.read_sql(
+            aggregation_query,
+            con=engine
         )
 
     except Exception as e:
@@ -448,10 +688,26 @@ def show():
             f"Aggregation failed: {e}"
         )
 
+        st.code(
+            aggregation_query,
+            language="sql"
+        )
+
         return
 
     # =====================================
-    # Rename Result Column
+    # Empty Result Check
+    # =====================================
+    if summary_df.empty:
+
+        st.warning(
+            "No results found."
+        )
+
+        return
+
+    # =====================================
+    # Rename Columns
     # =====================================
     summary_df.columns = [
         x_col,
@@ -463,7 +719,7 @@ def show():
     st.markdown("---")
 
     # =====================================
-    # Smart Chart Recommendation
+    # Recommended Chart
     # =====================================
     recommended_chart = recommend_chart(
 
@@ -472,11 +728,15 @@ def show():
         str(summary_df[y_col].dtype)
     )
 
+    # =====================================
+    # Better Recommendation
+    # =====================================
+    if is_datetime:
+
+        recommended_chart = "Line Chart"
+
     st.success(
-        f"""
-        Recommended Chart:
-        {recommended_chart}
-        """
+        f"Recommended Chart: {recommended_chart}"
     )
 
     # =====================================
@@ -575,7 +835,7 @@ def show():
     st.markdown("---")
 
     # =====================================
-    # Data Quality Report
+    # Quality Report
     # =====================================
     st.subheader(
         "📋 Data Quality Report"
@@ -583,15 +843,112 @@ def show():
 
     try:
 
-        report = generate_quality_report(
-            df
+        # =================================
+        # Total Rows Query
+        # =================================
+        total_rows_query = f'''
+        SELECT COUNT(*) AS total_rows
+
+        {from_sql}
+        '''
+
+        total_rows = pd.read_sql(
+            total_rows_query,
+            con=engine
+        ).iloc[0]["total_rows"]
+
+        st.write(
+            f"**Total Rows:** {total_rows:,}"
         )
 
-        for key, value in report.items():
+        st.write(
+            f"**Total Columns:** {len(preview_df.columns)}"
+        )
 
-            st.write(
-                f"**{key}:** {value}"
+        st.markdown("---")
+
+        # =================================
+        # Missing Value Report
+        # =================================
+        missing_report = []
+
+        for col in preview_df.columns:
+
+            sql_col = convert_to_sql_column(
+                col,
+                dashboard_mode,
+                table if dashboard_mode ==
+                "Single Dataset Dashboard"
+                else None
             )
+
+            missing_query = f'''
+            SELECT COUNT(*) AS missing_count
+
+            {from_sql}
+
+            WHERE {sql_col} IS NULL
+            '''
+
+            missing_count = pd.read_sql(
+                missing_query,
+                con=engine
+            ).iloc[0]["missing_count"]
+
+            missing_percent = round(
+                (
+                    missing_count
+                    / total_rows
+                ) * 100,
+                2
+            )
+
+            unique_query = f'''
+            SELECT COUNT(
+                DISTINCT {sql_col}
+            ) AS unique_count
+
+            {from_sql}
+            '''
+
+            unique_count = pd.read_sql(
+                unique_query,
+                con=engine
+            ).iloc[0]["unique_count"]
+
+            missing_report.append({
+
+                "Column": col,
+
+                "Missing Values": missing_count,
+
+                "Missing %": missing_percent,
+
+                "Unique Values": unique_count
+            })
+
+        # =================================
+        # Convert to DataFrame
+        # =================================
+        quality_df = pd.DataFrame(
+            missing_report
+        )
+
+        # =================================
+        # Sort by Missing Values
+        # =================================
+        quality_df = quality_df.sort_values(
+            by="Missing Values",
+            ascending=False
+        )
+
+        # =================================
+        # Display Report
+        # =================================
+        st.dataframe(
+            quality_df,
+            use_container_width=True
+        )
 
     except Exception as e:
 

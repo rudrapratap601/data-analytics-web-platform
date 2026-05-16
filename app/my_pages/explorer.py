@@ -74,9 +74,33 @@ def show():
     st.markdown("---")
 
     # =====================================
-    # Load Columns
+    # Preview Limit
     # =====================================
-    with st.spinner("Loading Dataset information..."):
+    preview_limit = st.selectbox(
+        "Rows to Preview",
+        [
+            100,
+            1000,
+            5000
+        ],
+        index=1
+    )
+
+    st.markdown("---")
+
+    # =====================================
+    # Database Engine
+    # =====================================
+    engine = get_engine()
+
+    # =====================================
+    # Load Dataset Information
+    # =====================================
+    with st.spinner("Loading dataset information..."):
+
+        # =================================
+        # Load Columns
+        # =================================
         try:
 
             columns = get_columns(
@@ -91,6 +115,9 @@ def show():
 
             return
 
+        # =================================
+        # Extract Column Information
+        # =================================
         column_names = [
             col[0]
             for col in columns
@@ -101,9 +128,9 @@ def show():
             for col in columns
         ]
 
-        # =====================================
+        # =================================
         # Dataset Information
-        # =====================================
+        # =================================
         st.subheader(
             f"📂 Dataset: {selected_table}"
         )
@@ -127,26 +154,56 @@ def show():
 
         st.markdown("---")
 
-        # =====================================
-        # Database Engine
-        # =====================================
-        engine = get_engine()
-
-        # =====================================
-        # PostgreSQL Query
-        # =====================================
-        query = f'''
-        SELECT *
+        # =================================
+        # Total Row Count
+        # =================================
+        count_query = f'''
+        SELECT COUNT(*)
         FROM "{selected_table}"
         '''
 
-        # =====================================
-        # Load Dataset
-        # =====================================
+        try:
+
+            total_rows = pd.read_sql(
+                count_query,
+                con=engine
+            ).iloc[0, 0]
+
+        except Exception as e:
+
+            st.error(
+                f"Failed to count rows: {e}"
+            )
+
+            return
+
+        # =================================
+        # Empty Dataset Check
+        # =================================
+        if total_rows == 0:
+
+            st.warning(
+                "Dataset is empty."
+            )
+
+            return
+
+        # =================================
+        # Preview Query
+        # =================================
+        preview_query = f'''
+        SELECT *
+        FROM "{selected_table}"
+        LIMIT {preview_limit}
+        '''
+
+        # =================================
+        # Load Preview Data
+        # =================================
         try:
 
             df = pd.read_sql(
-                query,
+                preview_query,
                 con=engine
             )
 
@@ -158,89 +215,143 @@ def show():
 
             return
 
-        # =====================================
-        # Empty Dataset Check
-        # =====================================
-        if df.empty:
+    # =====================================
+    # Data Preview
+    # =====================================
+    st.subheader("📌 Data Preview")
 
-            st.warning(
-                "Dataset is empty."
-            )
+    st.caption(
+        f"""
+        Showing first
+        {len(df):,} rows
+        out of
+        {total_rows:,} total rows
+        """
+    )
 
-            return
+    st.dataframe(
+        df,
+        use_container_width=True
+    )
 
-        # =====================================
-        # Data Preview
-        # =====================================
-        st.subheader("📌 Data Preview")
+    st.markdown("---")
 
-        st.dataframe(
-            df,
-            use_container_width=True
-        )
+    # =====================================
+    # Calculate Accurate Missing Values
+    # Using SQL
+    # =====================================
+    with st.spinner("Calculating dataset statistics..."):
 
-        st.markdown("---")
+        missing_data = []
 
-        # =====================================
-        # Dataset Summary
-        # =====================================
-        st.subheader("📊 Dataset Summary")
+        total_missing_values = 0
 
-        col1, col2, col3 = st.columns(3)
+        for col in column_names:
 
-        with col1:
+            try:
 
-            st.metric(
-                "Rows",
-                df.shape[0]
-            )
+                query = f'''
+                SELECT
+                    COUNT(*) AS total_rows,
+                    COUNT("{col}") AS non_null_rows
+                FROM "{selected_table}"
+                '''
 
-        with col2:
+                result = pd.read_sql(
+                    query,
+                    con=engine
+                )
 
-            st.metric(
-                "Columns",
-                df.shape[1]
-            )
+                total = int(
+                    result.iloc[0]["total_rows"]
+                )
 
-        with col3:
+                non_null = int(
+                    result.iloc[0]["non_null_rows"]
+                )
 
-            st.metric(
-                "Missing Values",
-                int(df.isnull().sum().sum())
-            )
+                missing = total - non_null
 
-        st.markdown("---")
-
-        # =====================================
-        # Missing Values Report
-        # =====================================
-        st.subheader(
-            "⚠️ Missing Values Report"
-        )
-
-        missing_df = pd.DataFrame({
-
-            "Column": df.columns,
-
-            "Missing Values": [
-                int(df[col].isnull().sum())
-                for col in df.columns
-            ],
-
-            "Missing %": [
-                round(
+                missing_percent = round(
                     (
-                        df[col].isnull().sum()
+                        missing
                         /
-                        len(df)
+                        total
                     ) * 100,
                     2
                 )
-                for col in df.columns
-            ]
-        })
 
-        st.dataframe(
-            missing_df,
-            use_container_width=True
+                total_missing_values += missing
+
+                missing_data.append({
+
+                    "Column": col,
+
+                    "Missing Values": missing,
+
+                    "Missing %": missing_percent
+                })
+
+            except Exception:
+
+                missing_data.append({
+
+                    "Column": col,
+
+                    "Missing Values": "Error",
+
+                    "Missing %": "Error"
+                })
+
+    # =====================================
+    # Dataset Summary
+    # =====================================
+    st.subheader("📊 Dataset Summary")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+
+        st.metric(
+            "Total Rows",
+            f"{total_rows:,}"
         )
+
+    with col2:
+
+        st.metric(
+            "Columns",
+            len(column_names)
+        )
+
+    with col3:
+
+        st.metric(
+            "Total Missing Values",
+            f"{total_missing_values:,}"
+        )
+
+    st.markdown("---")
+
+    # =====================================
+    # Missing Values Report
+    # =====================================
+    st.subheader(
+        "⚠️ Missing Values Report"
+    )
+
+    st.caption(
+        """
+        Missing value statistics are
+        calculated using the full dataset.
+        """
+    )
+
+    missing_df = pd.DataFrame(
+        missing_data
+    )
+
+    st.dataframe(
+        missing_df,
+        use_container_width=True
+    )
