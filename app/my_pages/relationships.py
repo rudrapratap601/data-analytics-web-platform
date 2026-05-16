@@ -30,8 +30,15 @@ def show():
     # =====================================
     # Load Tables
     # =====================================
-    tables = get_tables()
+    with st.spinner(
+        "Loading datasets..."
+    ):
 
+        tables = get_tables()
+
+    # =====================================
+    # Validation
+    # =====================================
     if len(tables) < 2:
 
         st.warning(
@@ -182,6 +189,8 @@ def show():
 
             st.cache_data.clear()
 
+            st.rerun()
+
     # =====================================
     # Existing Relationships
     # =====================================
@@ -191,7 +200,14 @@ def show():
         "📌 Existing Relationships"
     )
 
-    relationships = load_relationships()
+    # =====================================
+    # Load Relationships
+    # =====================================
+    with st.spinner(
+        "Loading relationships..."
+    ):
+
+        relationships = load_relationships()
 
     # =====================================
     # Empty State
@@ -239,3 +255,5 @@ def show():
             )
 
             st.cache_data.clear()
+
+            st.rerun()
