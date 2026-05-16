@@ -478,12 +478,8 @@ def show():
                 # =================================
                 # Clear Cache
                 # =================================
-                get_tables.clear()
-                get_columns.clear()
-
                 st.cache_data.clear()
                 st.cache_resource.clear()
-
             # =====================================
             # Success Messages
             # =====================================
