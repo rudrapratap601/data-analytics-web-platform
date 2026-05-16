@@ -146,10 +146,6 @@ def save_relationship(relationship):
 # =========================================
 def delete_relationship(index):
 
-    with st.spinner(
-        "Deleting relationship..."
-    ):
-
         create_relationships_table()
 
         relationships = load_relationships()
