@@ -498,7 +498,7 @@ def show():
 
             st.dataframe(
                 st.session_state["df"],
-                width="stretch"
+                use_container_width=True
             )
 
             st.success(
