@@ -17,11 +17,15 @@ A full-stack analytics web application built using Streamlit, PostgreSQL, SQLAlc
 
 This platform allows users to upload datasets, create relationships between multiple datasets, perform dynamic SQL-based analysis, generate dashboards, visualize insights, and clean datasets directly from the browser.
 
+##  🌐 Live Demo :
+
+🔗 Link - https://dataset-insight-platform.streamlit.app/
+
 ---
 
-# 🚀 Features
+## 🚀 Features
 
-## 📤 Dataset Upload
+### 📤 Dataset Upload
 
 - Upload CSV datasets
 - Upload Excel (XLSX) datasets
@@ -30,7 +34,7 @@ This platform allows users to upload datasets, create relationships between mult
 
 ---
 
-## 🔍 Data Explorer
+### 🔍 Data Explorer
 
 - Browse uploaded datasets
 - Preview rows and columns
@@ -39,7 +43,7 @@ This platform allows users to upload datasets, create relationships between mult
 
 ---
 
-## 🧹 Dataset Cleaner
+### 🧹 Dataset Cleaner
 
 - Fix column names
 - Convert datatypes
@@ -47,7 +51,7 @@ This platform allows users to upload datasets, create relationships between mult
 
 ---
 
-## 🔗 Relationship Builder
+### 🔗 Relationship Builder
 
 - Create relationships between datasets
 - Multi-table support
@@ -56,7 +60,7 @@ This platform allows users to upload datasets, create relationships between mult
 
 ---
 
-## 📊 Dynamic Analysis Builder
+### 📊 Dynamic Analysis Builder
 
 - Single table analysis
 - Multi-table analysis
@@ -70,7 +74,7 @@ This platform allows users to upload datasets, create relationships between mult
 
 ---
 
-## 📈 Dashboard Builder
+### 📈 Dashboard Builder
 
 - Dynamic dashboard generation
 - Smart chart recommendation engine
@@ -86,7 +90,7 @@ Supported charts:
 
 ---
 
-## 🧠 AI Insight Engine
+### 🧠 AI Insight Engine
 
 - Auto-generated insights
 - Trend summaries
@@ -94,11 +98,38 @@ Supported charts:
 
 ---
 
-## 📋 Data Quality Reports
+### 📋 Data Quality Reports
 
 - Missing value detection
 - Duplicate checks
 - Dataset health summary
+
+---
+
+## ⚠️ Dataset Notice
+
+This platform works best with already cleaned and structured datasets.
+
+The Dataset Cleaner currently supports:
+- Column name formatting
+- Datatype conversion
+
+It does NOT currently:
+- Remove duplicates
+- Fix inconsistent values
+- Fill missing values automatically
+- Detect corrupted rows
+
+Users are recommended to clean datasets before uploading.
+
+---
+
+## 📌 Performance Notes
+
+- Dashboard analysis is performed directly in PostgreSQL using SQL aggregation queries.
+- Only preview rows are partially loaded in the frontend.
+- Large datasets may require additional loading and processing time.
+- CSV datasets are recommended for faster performance.
 
 ---
 
@@ -114,7 +145,7 @@ Supported charts:
 
 ---
 
-# 📦 Installation
+## 📦 Installation
 
 Clone the repository:
 
@@ -136,7 +167,7 @@ pip install -r requirements.txt
 
 ---
 
-# ⚙️ Environment Variables
+### ⚙️ Environment Variables
 
 Create a `.env` file:
 
@@ -146,7 +177,7 @@ DATABASE_URL=your_supabase_database_url
 
 ---
 
-# ▶️ Run The App
+### ▶️ Run The App
 
 ```bash
 streamlit run app/main.py
@@ -154,7 +185,7 @@ streamlit run app/main.py
 
 ---
 
-# 📂 Project Structure
+## 📂 Project Structure
 
 ```text
 app/
@@ -185,7 +216,23 @@ README.md
 
 ---
 
-# 🎯 Project Goals
+## 🏗️ System Architecture
+
+```text
+User Upload
+    ↓
+Streamlit Frontend
+    ↓
+PostgreSQL Database (Supabase)
+    ↓
+SQL Query Engine
+    ↓
+Analysis / Dashboard / Charts
+
+```
+---
+
+## 🎯 Project Goals
 
 This project was built to:
 
@@ -200,10 +247,18 @@ This project was built to:
 ## 🧠 Author
 
 **Rudrapratap Sarma**  
-🎯 _Data Analyst | Data Scientist | AI & ML Enthusiast_  
-🎓 Manipal University Jaipur (Online BCA)
+BCA Student at Manipal University Jaipur
+
+Interested in:
+- Data Analytics
+- Data Science
+- AI/ML Engineering
+- Full Stack Data Applications
+
+### Connect With Me
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue?logo=linkedin)](https://www.linkedin.com/)
+
 [![GitHub](https://img.shields.io/badge/GitHub-rudrapratap601-black?logo=github)](https://github.com/rudrapratap601)
 
 ---
