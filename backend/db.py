@@ -1,8 +1,13 @@
 from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
 from urllib.parse import quote_plus
 import streamlit as st
 
 
+# =========================================
+# Create Database Engine
+# =========================================
+@st.cache_resource
 def get_engine():
 
     db_user = st.secrets["DB_USER"]
@@ -25,7 +30,31 @@ def get_engine():
     )
 
     engine = create_engine(
-        connection_string
+        connection_string,
+        pool_pre_ping=True
     )
 
     return engine
+
+
+# =========================================
+# Check Database Availability
+# =========================================
+def database_available():
+
+    try:
+
+        engine = get_engine()
+
+        with engine.connect():
+            pass
+
+        return True
+
+    except OperationalError:
+
+        return False
+
+    except Exception:
+
+        return False
