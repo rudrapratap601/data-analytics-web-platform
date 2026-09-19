@@ -13,9 +13,17 @@
 ![Dashboard](https://img.shields.io/badge/Dashboard-Dynamic%20Visualization-orange)
 ![Status](https://img.shields.io/badge/Status-Live/Deployed%20-success)
 
-A full-stack analytics web application built using Streamlit, PostgreSQL, SQLAlchemy, and Plotly.
+A full-stack data analytics platform built with **Python, Streamlit, PostgreSQL, SQLAlchemy, Pandas, NumPy, Plotly, and custom CSS**.
 
-This platform allows users to upload datasets, create relationships between multiple datasets, perform dynamic SQL-based analysis, generate dashboards, visualize insights, and clean datasets directly from the browser.
+The platform allows users to upload datasets, explore schemas, clean columns, define relationships between datasets, perform dynamic SQL-based analysis, build interactive dashboards, and generate automated statistical insights.
+
+---
+
+## 🖥️ Application Preview
+
+![Data Analytics Platform](docs/assets/platform-preview.png)
+
+---
 
 ##  🌐 Live Demo :
 
@@ -137,7 +145,7 @@ Users are recommended to clean datasets before uploading.
 
 | Category            | Tools                                     |
 | ------------------- | ----------------------------------------- |
-| **Frontend**        | Streamlit                                 |
+| **Frontend**        | Streamlit, custom CSS                     |
 | **Backend**         | Python, SQLAlchemy, PostgreSQL (Supabase) |
 | **Data Processing** | Pandas, NumPy                             |
 | **Visualization**   | Plotly                                    |
@@ -150,7 +158,7 @@ Users are recommended to clean datasets before uploading.
 ```text
 User Upload
     ↓
-Streamlit Frontend
+Streamlit, CSS Frontend
     ↓
 PostgreSQL Database (Supabase)
     ↓
