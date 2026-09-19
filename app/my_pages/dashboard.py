@@ -1,3 +1,20 @@
+"""
+Dashboard Builder Page Module
+
+The core visualization page of the platform. Generates dynamic, interactive
+Plotly dashboards from single datasets or joined multi-dataset configurations.
+
+Key Features:
+    - Single & Multi-dataset dashboard modes
+    - Smart chart recommendation engine
+    - Interactive Plotly visualizations (Bar, Line, Pie, Scatter)
+    - Full-dataset SQL aggregations (runs on PostgreSQL, not browser)
+    - Time-series aggregation support (Day, Month, Year via DATE_TRUNC)
+    - AI-generated statistical insights
+    - Comprehensive data quality report
+    - CSV export functionality
+"""
+
 import streamlit as st
 import pandas as pd
 
@@ -14,6 +31,11 @@ from backend.insight_engine import (
     generate_insights
 )
 
+from ui.components import (
+    render_metric_card,
+    render_insight_box
+)
+
 
 # =========================================
 # Find Matching Relationship
@@ -22,6 +44,16 @@ def get_matching_relationship(
     table1,
     table2
 ):
+    """
+    Find a saved relationship between two tables in either direction.
+
+    Args:
+        table1 (str): First table name
+        table2 (str): Second table name
+
+    Returns:
+        dict or None: Relationship dictionary if found, None otherwise
+    """
 
     relationships = load_relationships()
 
@@ -52,6 +84,18 @@ def get_matching_relationship(
 # Better Dimension Columns
 # =========================================
 def get_dimension_columns(df):
+    """
+    Filter out ID, UUID, and URL columns from dimension candidate list.
+
+    Improves chart readability by excluding identifier columns that
+    would produce meaningless categorical axes.
+
+    Args:
+        df (pd.DataFrame): Preview DataFrame
+
+    Returns:
+        list: Filtered column names suitable for X-axis / dimensions
+    """
 
     excluded_keywords = [
 
@@ -97,6 +141,19 @@ def convert_to_sql_column(
     dashboard_mode,
     table=None
 ):
+    """
+    Convert a UI-selected column name into a safe SQL column expression.
+
+    Handles single-dataset quoting and multi-dataset aliased column references.
+
+    Args:
+        col_name (str): Column name from UI selection
+        dashboard_mode (str): "Single Dataset Dashboard" or "Multi Dataset Dashboard"
+        table (str, optional): Table name for single-dataset mode
+
+    Returns:
+        str: SQL-safe column reference
+    """
 
     # =====================================
     # Single Dataset
@@ -123,6 +180,19 @@ def convert_to_sql_column(
 # MAIN PAGE
 # =========================================
 def show():
+    """
+    Render the Dashboard Builder page.
+
+    Full Workflow:
+        1. Choose Single or Multi-dataset mode
+        2. Select table(s) and configure relationship if multi-table
+        3. Preview dataset and select dimension (X) and metric (Y) columns
+        4. Choose aggregation function (SUM, AVG, COUNT, MAX, MIN)
+        5. Set time granularity if dimension is a datetime column
+        6. Execute SQL aggregation on PostgreSQL
+        7. Render recommended or user-selected Plotly chart
+        8. Display AI insights, Data Quality Report, and CSV export button
+    """
 
     # =====================================
     # Page Header
@@ -161,6 +231,49 @@ def show():
         return
 
     engine = get_engine()
+
+    # =====================================
+    # Quick KPI Summary
+    # =====================================
+    st.subheader("📊 Quick Overview")
+
+    kpi_col1, kpi_col2, kpi_col3, kpi_col4 = st.columns(4)
+
+    with kpi_col1:
+        render_metric_card(
+            "Available Datasets",
+            len(tables),
+            icon="📂",
+            subtext="Ready to analyze"
+        )
+
+    with kpi_col2:
+        # Count total relationships
+        relationships = load_relationships()
+        render_metric_card(
+            "Active Relationships",
+            len(relationships),
+            icon="🔗",
+            subtext="Table connections"
+        )
+
+    with kpi_col3:
+        render_metric_card(
+            "Chart Types",
+            "4",
+            icon="📈",
+            subtext="Bar, Line, Pie, Scatter"
+        )
+
+    with kpi_col4:
+        render_metric_card(
+            "Aggregations",
+            "5",
+            icon="⚡",
+            subtext="SUM, AVG, COUNT, MAX, MIN"
+        )
+
+    st.markdown("---")
 
     # =====================================
     # Dashboard Mode
@@ -860,26 +973,7 @@ def show():
 
         for insight in insights:
 
-            st.markdown(
-                f"""
-        <div style="
-        background-color:#17324d;
-        padding:18px;
-        border-radius:12px;
-        margin-bottom:14px;
-        border-left:5px solid #4da6ff;
-        white-space:normal;
-        overflow-wrap:anywhere;
-        word-break:break-word;
-        color:white;
-        font-size:16px;
-        line-height:1.7;
-        ">
-        🧠 {insight}
-        </div>
-        """,
-                unsafe_allow_html=True
-            )
+            render_insight_box(insight)
 
     except Exception as e:
 

@@ -1,3 +1,22 @@
+"""
+Dataset Upload Page Module
+
+Handles CSV and Excel file uploads to PostgreSQL cloud storage.
+
+Key Features:
+    - File upload widget (CSV, XLSX)
+    - Table name input and sanitization
+    - Automatic column name cleaning
+    - Chunked upload for large files
+    - Dataset preview after upload
+
+Safety Measures:
+    - Sanitizes table names (removes special characters)
+    - Cleans column names (lowercase, underscores)
+    - Validates non-empty files
+    - Handles encoding and file format errors
+"""
+
 import re
 
 import streamlit as st
@@ -10,6 +29,22 @@ from backend.db import get_engine
 # Safe Table Name
 # =========================================
 def safe_table_name(name):
+    """
+    Sanitize a user-provided table name for safe database storage.
+
+    Removes special characters, converts to lowercase, and replaces
+    spaces with underscores to create a valid PostgreSQL table identifier.
+
+    Args:
+        name (str): Raw table name from user input
+
+    Returns:
+        str: Sanitized table name safe for PostgreSQL
+
+    Example:
+        >>> safe_table_name("Monthly Sales 2024!")
+        'monthlysales2024'
+    """
 
     return re.sub(
         r"[^a-zA-Z0-9_]",
@@ -25,6 +60,21 @@ def safe_table_name(name):
 # Infrastructure Only
 # =========================================
 def safe_column_names(df):
+    """
+    Clean all column names in a DataFrame for safe database storage.
+
+    Converts column names to lowercase, replaces spaces with underscores,
+    and removes special characters to prevent SQL errors.
+
+    Args:
+        df (pd.DataFrame): DataFrame with potentially unsafe column names
+
+    Returns:
+        pd.DataFrame: Same DataFrame with sanitized column names
+
+    Note:
+        Modifies column names in place.
+    """
 
     df.columns = [
 
@@ -46,6 +96,23 @@ def safe_column_names(df):
 # MAIN PAGE
 # =========================================
 def show():
+    """
+    Render the dataset upload page.
+
+    User Flow:
+        1. Upload CSV or Excel file via file_uploader
+        2. Enter a name for the dataset
+        3. Click "Upload Dataset" button
+        4. File is processed, cleaned, and uploaded to PostgreSQL
+        5. Preview of uploaded data is displayed
+
+    Handles:
+        - CSV and XLSX file formats
+        - UTF-8 encoding for CSV
+        - Chunked uploads (10,000 rows per batch)
+        - Table name validation
+        - Column name sanitization
+    """
 
     st.title("📤 Upload Dataset")
 

@@ -1,3 +1,19 @@
+"""
+SQL Query Builder Module
+
+This module constructs dynamic, PostgreSQL-compatible SQL queries for
+both single-table and multi-table analysis with aggregations and grouping.
+
+Key Features:
+    - Safe column and table quoting for PostgreSQL
+    - Single-table aggregation queries (SUM, AVG, COUNT, MAX, MIN)
+    - Multi-table JOIN queries using saved relationships
+    - Dynamic GROUP BY support
+
+Dependencies:
+    - backend.relationships: For retrieving table relationships
+"""
+
 from backend.relationships import load_relationships
 
 
@@ -6,11 +22,29 @@ from backend.relationships import load_relationships
 # PostgreSQL Compatible
 # =========================================
 def format_column(column_name):
+    """
+    Format a column name safely for PostgreSQL queries.
 
+    Handles both single-table column names and multi-table column names
+    in 'table.column' format by adding double quotes around identifiers.
+
+    Args:
+        column_name (str): Column name, optionally prefixed with table name
+                          (e.g., "price" or "sales.price")
+
+    Returns:
+        str: Safely quoted column identifier for PostgreSQL
+
+    Examples:
+        >>> format_column("price")
+        '"price"'
+        >>> format_column("sales.price")
+        '"sales"."price"'
+    """
     # =====================================
     # Multi-table column
     # Example:
-    # sales.price
+    # sales.price -> "sales"."price"
     # =====================================
     if "." in column_name:
 
@@ -20,6 +54,8 @@ def format_column(column_name):
 
     # =====================================
     # Single-table column
+    # Example:
+    # price -> "price"
     # =====================================
     return f'"{column_name}"'
 
@@ -28,7 +64,22 @@ def format_column(column_name):
 # Format Table Name Safely
 # =========================================
 def format_table(table_name):
+    """
+    Format a table name safely for PostgreSQL queries.
 
+    Wraps the table name in double quotes to handle reserved words
+    and special characters safely.
+
+    Args:
+        table_name (str): Raw table name
+
+    Returns:
+        str: Double-quoted table name
+
+    Example:
+        >>> format_table("monthly_sales")
+        '"monthly_sales"'
+    """
     return f'"{table_name}"'
 
 
@@ -43,7 +94,46 @@ def build_query(
     group_by_column=None,
     table2=None
 ):
+    """
+    Build a dynamic SQL aggregation query for single or multi-table analysis.
 
+    Constructs a complete, safe PostgreSQL query based on user configuration.
+    Supports single-table queries and multi-table JOIN queries using relationships
+    saved in the database.
+
+    Args:
+        table1 (str): Primary table name
+        metric_column (str): Column to aggregate (e.g., "sales" or "orders.amount")
+        aggregation (str): SQL aggregate function (SUM, AVG, COUNT, MAX, MIN)
+        group_by_column (str, optional): Column to group results by. Defaults to None.
+        table2 (str, optional): Secondary table name for JOIN queries. Defaults to None.
+
+    Returns:
+        str: Formatted, executable PostgreSQL query string
+
+    Raises:
+        ValueError: If table2 is provided but no relationship exists between
+                   table1 and table2
+
+    Query Patterns:
+        Single table, no group by:
+            SELECT AGG(col) AS result FROM "table1"
+
+        Single table, with group by:
+            SELECT group_col, AGG(col) AS result FROM "table1" GROUP BY group_col
+
+        Multi table, with JOIN:
+            SELECT [group_col,] AGG(col) AS result
+            FROM "table1" JOIN "table2" ON "t1"."c1" = "t2"."c2"
+            [GROUP BY group_col]
+
+    Examples:
+        >>> build_query("sales", "amount", "SUM")
+        'SELECT SUM("amount") AS result FROM "sales"'
+
+        >>> build_query("sales", "amount", "AVG", group_by_column="region")
+        'SELECT "region", AVG("amount") AS result FROM "sales" GROUP BY "region"'
+    """
     # =====================================
     # Format SQL Safely
     # =====================================
@@ -106,6 +196,7 @@ def build_query(
 
     # =====================================
     # Find Matching Relationship
+    # Check both (table1, table2) and (table2, table1) orientations
     # =====================================
     for rel in relationships:
 

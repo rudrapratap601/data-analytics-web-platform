@@ -1,3 +1,20 @@
+"""
+Dataset Cleaner Page Module
+
+Provides interactive tools to clean and standardize datasets before analysis.
+
+Key Features:
+    - Standardize column names (lowercase, replace spaces/symbols)
+    - Convert column datatypes (INT, FLOAT, TEXT, DATE)
+    - Interactive preview of cleaned data
+    - Save options: overwrite existing table or save as new table
+
+Cleaning Operations:
+    - Column name formatting: replaces spaces, slashes, dashes, parentheses
+    - Datatype coercion: handles conversion errors gracefully (coerce to NaN)
+    - SQL datatype mapping for PostgreSQL storage
+"""
+
 import streamlit as st
 import pandas as pd
 
@@ -21,6 +38,22 @@ from backend.data_loader import load_data
 # Clean Column Names
 # =========================================
 def clean_column_name(column_name):
+    """
+    Apply standard cleaning rules to a single column name.
+
+    Converts to lowercase, replaces spaces/hyphens/slashes with underscores,
+    removes parentheses, and replaces '%' with 'percent'.
+
+    Args:
+        column_name (str): Original column name
+
+    Returns:
+        str: Cleaned, standardized column name
+
+    Example:
+        >>> clean_column_name("Total Sales (USD) %")
+        'total_sales_usd_percent'
+    """
 
     cleaned = (
         column_name
@@ -45,6 +78,25 @@ def convert_column_type(
     column,
     target_type
 ):
+    """
+    Convert a DataFrame column to a specified target datatype.
+
+    Handles conversion errors gracefully using pandas coercion rules.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing the column
+        column (str): Column name to convert
+        target_type (str): Target type identifier ("INT", "FLOAT", "TEXT", "DATE")
+
+    Returns:
+        pd.DataFrame: DataFrame with the converted column
+
+    Supported Types:
+        - "INT": Converts to nullable Int64 (handles missing values)
+        - "FLOAT": Converts to float64
+        - "TEXT": Converts to string
+        - "DATE": Converts to datetime64[ns]
+    """
 
     try:
 
@@ -100,6 +152,16 @@ def convert_column_type(
 # MAIN PAGE
 # =========================================
 def show():
+    """
+    Render the Dataset Cleaner page.
+
+    Step-by-Step Workflow:
+        1. Select a dataset from the dropdown
+        2. Clean/rename column names with pre-filled suggestions
+        3. Convert column datatypes (INT, FLOAT, TEXT, DATE)
+        4. Preview the cleaned dataset and updated datatypes
+        5. Choose to replace the original table or save as a new table
+    """
 
     st.title("🧹 Dataset Cleaner")
 

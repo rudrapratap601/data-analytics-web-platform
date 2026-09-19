@@ -1,219 +1,188 @@
+"""
+Home Page Module
+
+Displays the platform welcome page with:
+    - Modern Hero header and platform overview
+    - Interactive 6-step workflow guide with glassmorphism cards
+    - Feature grid showcase with status badges
+    - Supported file formats and performance recommendations
+    - Common dataset quality best practices
+
+This is the landing page users see when they first open the application.
+"""
+
 import streamlit as st
+from ui.components import (
+    render_hero,
+    render_step_card,
+    render_metric_card
+)
 
 
 def show():
+    """
+    Render the modernized home page with platform introduction and guidance.
+
+    Displays comprehensive information about:
+        - Modern hero banner with quick statistics
+        - Suggested workflow (6-step process with glass cards)
+        - Dataset requirements and best practices
+        - Platform features grid
+        - Supported file formats (CSV, Excel)
+        - Performance recommendations
+    """
 
     # =====================================
-    # Page Title
+    # Hero Banner
     # =====================================
-    st.title(
-        "🏠 Multi-Dataset Analytics Platform"
+    render_hero(
+        title="Multi-Dataset Analytics Platform",
+        subtitle="Connect multiple datasets, run SQL aggregations, build dashboards, and generate AI insights in real-time.",
+        badge="Enterprise Analytics v2.0"
     )
 
     # =====================================
-    # Getting Started
+    # Quick KPI Summary Row
     # =====================================
-    st.subheader("🚀 Getting Started")
+    col1, col2, col3, col4 = st.columns(4)
 
-    st.markdown("""
-    ### Suggested Workflow
+    with col1:
+        render_metric_card("Supported Formats", "CSV & XLSX", icon="📁", subtext="UTF-8 & Excel")
 
-    1. Upload your datasets
-    2. Explore dataset structure
-    3. Clean column names and datatypes
-    4. Create relationships between tables
-    5. Build dashboards and analysis
-    6. Export reports and charts
+    with col2:
+        render_metric_card("Analysis Engine", "PostgreSQL", icon="⚡", subtext="Server-side SQL")
 
-    👉 Start by visiting the
-    **Upload Dataset** section.
-    """)
+    with col3:
+        render_metric_card("Visualization", "Plotly Express", icon="📈", subtext="Interactive Charts")
 
-    st.markdown("---")
+    with col4:
+        render_metric_card("AI Insights", "Statistical", icon="🧠", subtext="Automated Insights")
 
+    st.markdown("<div style='margin-bottom: 24px;'></div>", unsafe_allow_html=True)
 
     # =====================================
-    # Important Notice
+    # Suggested Workflow Section
     # =====================================
-    st.warning("""
-    ⚠️ Important Dataset Notice
+    st.subheader("🚀 Suggested Workflow")
+    st.caption("Follow these 6 streamlined steps to turn raw files into actionable dashboards")
 
-    This platform works best with
-    already cleaned and structured datasets.
+    wcol1, wcol2 = st.columns(2)
 
-    The Dataset Cleaner currently supports
-    only BASIC cleaning operations such as:
+    with wcol1:
+        render_step_card(
+            1,
+            "Upload Datasets",
+            "Upload your CSV or Excel files. Table names and column names are automatically sanitized for PostgreSQL."
+        )
+        render_step_card(
+            2,
+            "Explore Data & Schema",
+            "Browse data rows, inspect datatypes, and view server-side missing value quality reports."
+        )
+        render_step_card(
+            3,
+            "Clean & Format Columns",
+            "Rename columns to clean names and convert datatypes to proper SQL formats."
+        )
 
-    - Column name formatting
-    - Datatype conversion
+    with wcol2:
+        render_step_card(
+            4,
+            "Define Relationships",
+            "Map primary/foreign key connections between datasets to unlock multi-table JOINs."
+        )
+        render_step_card(
+            5,
+            "Build SQL Analyses",
+            "Run single or multi-table aggregations (SUM, AVG, COUNT, MAX, MIN) with dynamic GROUP BY."
+        )
+        render_step_card(
+            6,
+            "Generate Dashboards",
+            "Render Plotly charts, review automated statistical AI insights, and export summary CSVs."
+        )
 
-    It DOES NOT automatically:
-
-    - Fix inconsistent values
-    - Replace missing/null values
-    - Remove duplicate rows
-    - Correct corrupted records
-    - Standardize mixed formatting
-    - Detect invalid values
-
-    For accurate analysis and dashboards,
-    datasets should be properly cleaned
-    before upload.
-
-    ✅ Recommended:
-    Use clean CSV datasets for faster
-    loading and better performance.
-
-    ⚠️ Large datasets are supported,
-    but upload, loading, analysis,
-    and dashboard generation may
-    take more time.
-    """)
-
-    st.markdown("---")
-
-    # =====================================
-    # Platform Introduction
-    # =====================================
-    st.markdown("""
-    Build dashboards, perform analysis,
-    explore insights, and connect
-    multiple datasets in one platform.
-    """)
-
-    st.markdown("---")
+    st.markdown("<div style='margin-bottom: 24px;'></div>", unsafe_allow_html=True)
 
     # =====================================
-    # Features
+    # Platform Features Grid
     # =====================================
-    st.subheader("📌 Platform Features")
+    st.subheader("📌 Platform Capabilities")
 
-    st.markdown("""
-    ### 📂 Dataset Management
-    - Upload multiple datasets
-    - Support for CSV and Excel files
-    - Store datasets in PostgreSQL
+    fcol1, fcol2, fcol3 = st.columns(3)
 
-    ### 🔍 Data Exploration
-    - Preview datasets
-    - View datatypes and columns
-    - Generate quality reports
-    - Inspect missing values
+    with fcol1:
+        st.markdown("""
+        <div class="glass-card" style="min-height: 200px;">
+            <div style="font-size: 1.6rem; margin-bottom: 8px;">🗄️</div>
+            <h4 style="color: #f8fafc; margin-bottom: 6px;">Database Storage</h4>
+            <p style="color: #94a3b8; font-size: 0.88rem; line-height: 1.5;">
+                Persist your datasets directly into PostgreSQL (Supabase) with chunked loading for large file handling.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
-    ### 🧹 Dataset Cleaning
-    - Rename columns
-    - Convert datatypes
-    - Save cleaned datasets
-    
-    ### 🔗 Relationship Builder
-    - Define relationships between tables
+    with fcol2:
+        st.markdown("""
+        <div class="glass-card" style="min-height: 200px;">
+            <div style="font-size: 1.6rem; margin-bottom: 8px;">🔗</div>
+            <h4 style="color: #f8fafc; margin-bottom: 6px;">Multi-Table JOINs</h4>
+            <p style="color: #94a3b8; font-size: 0.88rem; line-height: 1.5;">
+                Connect relational datasets via foreign keys and execute complex multi-table SQL queries seamlessly.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
-    ### 🔎 Dataset Analysis
-    - Genarate insights and trends
-    - Perform aggregations
+    with fcol3:
+        st.markdown("""
+        <div class="glass-card" style="min-height: 200px;">
+            <div style="font-size: 1.6rem; margin-bottom: 8px;">📊</div>
+            <h4 style="color: #f8fafc; margin-bottom: 6px;">Smart Chart Engine</h4>
+            <p style="color: #94a3b8; font-size: 0.88rem; line-height: 1.5;">
+                Automatic chart recommendation based on column datatypes with dark glassmorphic Plotly styling.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
-    ### 📊 Dashboard Builder
-    - Generate charts dynamically
-    - Perform aggregations
-    - Time-series analysis
-    - Export dashboard results
-    """)
-
-    st.markdown("---")
-
-    # =====================================
-    # Supported Formats
-    # =====================================
-    st.subheader("📂 Supported File Formats")
-
-    st.markdown("""
-    ✅ CSV (.csv)
-
-    ✅ Excel (.xlsx)
-    """)
-
-    st.info("""
-    CSV files are strongly recommended
-    because they usually:
-
-    - Load faster
-    - Use less memory
-    - Improve dashboard performance
-    - Reduce upload issues
-    """)
-
-    st.markdown("---")
+    st.markdown("<div style='margin-bottom: 20px;'></div>", unsafe_allow_html=True)
 
     # =====================================
-    # Dataset Recommendations
+    # Best Practices & Guidelines
     # =====================================
-    st.subheader("✅ Recommended Dataset Practices")
+    gcol1, gcol2 = st.columns(2)
 
-    st.markdown("""
-    For best performance and accurate analysis:
+    with gcol1:
+        st.markdown("""
+        <div class="glass-card">
+            <h4 style="color: #10b981; margin-bottom: 10px;">✅ Recommended Dataset Practices</h4>
+            <ul style="color: #cbd5e1; font-size: 0.88rem; line-height: 1.8; padding-left: 20px; margin: 0;">
+                <li>Use clean <b>CSV files</b> for fastest upload & query performance</li>
+                <li>Ensure unique identifiers exist for relational table joins</li>
+                <li>Keep consistent datetime formats (e.g. <code>YYYY-MM-DD</code>)</li>
+                <li>Remove redundant columns before uploading large datasets</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
 
-    - Use clean datasets
-    - Remove duplicate rows
-    - Handle missing values beforehand
-    - Use meaningful column names
-    - Keep consistent datatypes
-    - Validate date formats
-    - Remove unnecessary columns
-    - Avoid corrupted rows
-    """)
+    with gcol2:
+        st.markdown("""
+        <div class="glass-card">
+            <h4 style="color: #f59e0b; margin-bottom: 10px;">⚠️ Important Dataset Notice</h4>
+            <p style="color: #cbd5e1; font-size: 0.88rem; line-height: 1.6; margin: 0;">
+                The platform executes aggregations directly on PostgreSQL. For optimal results, ensure datasets
+                do not contain corrupted delimiters or invalid characters. Free-tier cloud databases may take 30-60s
+                to wake up from sleep mode.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
-    st.markdown("---")
+    st.markdown("<div style='margin-top: 30px;'></div>", unsafe_allow_html=True)
 
-    # =====================================
-    # Performance Notes
-    # =====================================
-    st.subheader("⚡ Performance Notes")
-
-    st.warning("""
-    Large datasets are supported,
-    but they may require more time for:
-
-    - Uploading
-    - Loading
-    - Cleaning
-    - Joining datasets
-    - Aggregation
-    - Dashboard generation
-    - Chart rendering
-
-    Smaller optimized datasets
-    will provide faster performance.
-    """)
-
-    st.markdown("---")
-
-    # =====================================
-    # Common Dataset Problems
-    # =====================================
-    st.subheader("⚠️ Common Dataset Problems")
-
-    st.warning("""
-    Datasets with the following issues
-    may produce incorrect analysis
-    or visualization problems:
-
-    - Mixed datatypes
-    - Invalid delimiters
-    - Corrupted rows
-    - Inconsistent formatting
-    - Duplicate records
-    - Missing values
-    - Invalid dates
-    - Extremely high-cardinality columns
-    """)
-
-    st.markdown("---")
-
-    
     # =====================================
     # Footer
     # =====================================
-    st.caption("""
-    Multi-Dataset Analytics Platform
-    | Streamlit + PostgreSQL + Pandas
-    """)
+    st.markdown("""
+    <div style="text-align: center; color: #64748b; font-size: 0.8rem; padding: 20px 0;">
+        Multi-Dataset Analytics Platform &bull; Powered by Streamlit, PostgreSQL & Plotly Express
+    </div>
+    """, unsafe_allow_html=True)

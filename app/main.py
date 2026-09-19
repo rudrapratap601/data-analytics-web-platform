@@ -1,7 +1,31 @@
+"""
+Multi-Dataset Analytics Platform - Main Application Entry Point
+
+This is the primary Streamlit application file that handles navigation,
+page routing, and database health checks.
+
+Navigation Structure:
+    - Home: Welcome page with platform overview
+    - Upload Dataset: Upload CSV/Excel files to PostgreSQL
+    - Data Explorer: Browse and preview uploaded datasets
+    - Dataset Cleaner: Clean column names and fix datatypes
+    - Relationships: Create table-to-table relationships (JOINs)
+    - Analysis Builder: Build dynamic SQL aggregations
+    - Dashboard: Generate interactive Plotly visualizations
+
+Database Strategy:
+    - Checks database availability before loading data pages
+    - Handles Supabase cloud database sleep/wake cycles gracefully
+    - Routes navigation through sidebar radio buttons
+
+Author: Rudrapratap Sarma
+"""
+
 import streamlit as st
 import sys
 import os
 
+# Add parent directory to Python path for backend imports
 sys.path.append(
     os.path.abspath(
         os.path.join(
@@ -25,22 +49,22 @@ st.set_page_config(
 )
 
 # =========================================
-# Header
+# Apply Modern Corporate Glassmorphism Theme
 # =========================================
-st.title(
-    "📊 Multi-Dataset Analytics Platform"
-)
+from ui.theme import apply_theme
 
-st.markdown("""
-Welcome to the Multi-Dataset Analytics Platform!
+apply_theme()
 
-This tool allows you to upload multiple datasets,
-explore their contents, analyze relationships
-between them, and build custom analyses
-and dashboards.
-""")
-
-st.markdown("---")
+# =========================================
+# Sidebar Brand Banner
+# =========================================
+st.sidebar.markdown("""
+<div style="text-align: center; padding: 12px 0 20px 0;">
+    <div style="font-size: 2.2rem; margin-bottom: 6px;">📊</div>
+    <div style="font-size: 1.15rem; font-weight: 700; color: #f8fafc; letter-spacing: -0.02em;">Data Platform</div>
+    <div style="font-size: 0.75rem; color: #3b82f6; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px;">Enterprise Analytics</div>
+</div>
+""", unsafe_allow_html=True)
 
 # =========================================
 # Sidebar Navigation
@@ -49,6 +73,7 @@ st.sidebar.title(
     "Navigation"
 )
 
+# Radio button navigation menu
 page = st.sidebar.radio(
     "Go to",
     [
@@ -79,6 +104,8 @@ else:
     # =====================================
     # Database Health Check
     # =====================================
+    # Check if database is awake and reachable
+    # (Supabase free tier sleeps after inactivity)
     if not database_available():
 
         st.warning(

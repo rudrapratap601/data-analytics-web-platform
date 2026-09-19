@@ -27,3 +27,9 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Confidential Files
+CAPSTONE_AI_ML_ROADMAP.md
+
+# Interview Prep File 
+INTERVIEW_PREPARATION.md

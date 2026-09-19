@@ -11,7 +11,7 @@
 ![GitHub](https://img.shields.io/badge/GitHub-Version%20Control-black?logo=github)
 ![Analytics](https://img.shields.io/badge/Data-Multi%20Dataset%20Analytics-blueviolet)
 ![Dashboard](https://img.shields.io/badge/Dashboard-Dynamic%20Visualization-orange)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-success)
+![Status](https://img.shields.io/badge/Status-Live/Deployed%20-success)
 
 A full-stack analytics web application built using Streamlit, PostgreSQL, SQLAlchemy, and Plotly.
 
@@ -170,6 +170,16 @@ This project was built to:
 - build dynamic dashboard systems
 - handle multi-dataset analytics
 - create production-style analytics workflows
+
+---
+
+## 📄 License
+
+Copyright © 2026 Rudrapratap Sarma. All Rights Reserved.
+
+This project is published for portfolio and educational purposes. The source code and original materials in this repository may not be copied, modified, distributed, reproduced, or used commercially without explicit permission from the author.
+
+For complete terms, see the [LICENSE.md](LICENSE.md) file.
 
 ---
 

@@ -1,3 +1,16 @@
+"""
+Relationship Builder Page Module
+
+Enables users to define and manage foreign-key-like relationships between datasets.
+These relationships power multi-table JOIN queries in the Analysis Builder and Dashboard.
+
+Key Features:
+    - Select two tables to join
+    - Choose matching join columns from each table
+    - Save relationships to the database
+    - View and delete existing relationships
+"""
+
 import streamlit as st
 
 from backend.schema import (
@@ -16,6 +29,15 @@ from backend.relationships import (
 # MAIN PAGE
 # =========================================
 def show():
+    """
+    Render the Relationship Builder page.
+
+    Step-by-Step Workflow:
+        1. Select two different datasets to connect
+        2. Pick the join key column from each table
+        3. Click "Create Relationship" to save the link
+        4. View all active relationships and delete if needed
+    """
 
     st.title("🔗 Relationship Builder")
 

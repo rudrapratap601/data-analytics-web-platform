@@ -1,3 +1,16 @@
+"""
+Data Explorer Page Module
+
+Allows users to inspect uploaded datasets without loading full tables into memory.
+
+Key Features:
+    - Dataset selector (lists all user tables)
+    - Configurable preview row limit (100, 1,000, 5,000)
+    - Schema inspection (columns and datatypes)
+    - Full-table missing value analysis via SQL COUNT queries
+    - Dataset summary metrics (rows, columns, missing values)
+"""
+
 import pandas as pd
 import streamlit as st
 
@@ -12,6 +25,16 @@ from backend.schema import (
 # MAIN PAGE
 # =========================================
 def show():
+    """
+    Render the Data Explorer page.
+
+    Provides a complete overview of an uploaded dataset:
+        1. Table selector dropdown
+        2. Column list with PostgreSQL datatypes
+        3. Configurable row preview (using SQL LIMIT)
+        4. Summary metrics (total rows, columns, missing values)
+        5. Detailed missing values report calculated via SQL
+    """
 
     # =====================================
     # Page Header

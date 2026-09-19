@@ -1,3 +1,17 @@
+"""
+Dynamic Analysis Builder Page Module
+
+Provides an interactive interface to construct and execute SQL-based analytics
+queries on single tables or across multiple joined tables.
+
+Key Features:
+    - Single-table analysis mode
+    - Multi-table analysis mode (using saved relationships)
+    - SQL aggregations: SUM, AVG, COUNT, MAX, MIN
+    - Dynamic GROUP BY categorization
+    - Generated SQL query inspection
+"""
+
 import streamlit as st
 import pandas as pd
 
@@ -19,6 +33,18 @@ from backend.data_loader import (
 # Get Numeric Columns Only
 # =========================================
 def get_numeric_columns(columns):
+    """
+    Filter a column list to return only numeric columns.
+
+    Checks column type strings against standard SQL numeric types:
+    INT, BIGINT, FLOAT, DOUBLE, DECIMAL, NUMERIC, REAL.
+
+    Args:
+        columns (list): List of (column_name, data_type) tuples
+
+    Returns:
+        list: List of column names that are numeric
+    """
 
     numeric_types = [
         "INT",
@@ -52,6 +78,17 @@ def get_numeric_columns(columns):
 # MAIN PAGE
 # =========================================
 def show():
+    """
+    Render the Dynamic Analysis Builder page.
+
+    Workflow:
+        1. Choose Analysis Mode (Single Table or Multi Table)
+        2. Select the dataset(s)
+        3. Pick a metric column and aggregation function (SUM, AVG, COUNT, MAX, MIN)
+        4. Optionally configure a GROUP BY dimension column
+        5. Run the query and view results in an interactive table
+        6. Toggle SQL code visibility to inspect the generated query
+    """
 
     st.title(
         "📊 Dynamic Analysis Builder"
